@@ -25,6 +25,26 @@ import time
 import urllib.request
 import urllib.error
 
+# 输入校验正则：股票代码只允许字母和数字，最长 10 字符
+VALID_CODE_PATTERN = re.compile(r'^[A-Za-z0-9]{1,10}$')
+# 市场标识白名单
+VALID_MARKETS = {"sh", "sz", "hk", "us"}
+
+
+def validate_input(code: str, market: str | None) -> str | None:
+    """校验输入参数，防止注入攻击。返回 None 表示合法，否则返回错误信息。"""
+    if not VALID_CODE_PATTERN.match(code):
+        return (
+            f"非法的股票代码 '{code}'。"
+            "股票代码仅允许字母和数字，长度 1-10 位。"
+        )
+    if market is not None and market not in VALID_MARKETS:
+        return (
+            f"非法的市场标识 '{market}'。"
+            f"仅支持: {', '.join(sorted(VALID_MARKETS))}。"
+        )
+    return None
+
 
 def detect_market(code: str) -> str:
     """根据股票代码自动识别市场"""
@@ -191,6 +211,15 @@ def main():
 
     code = sys.argv[1].strip()
     market = sys.argv[2].strip().lower() if len(sys.argv) > 2 else None
+
+    # 输入安全校验：仅允许字母、数字和白名单市场标识
+    validation_error = validate_input(code, market)
+    if validation_error:
+        print(json.dumps(
+            {"status": "error", "message": validation_error},
+            ensure_ascii=False,
+        ))
+        sys.exit(1)
 
     if not market:
         market = detect_market(code)

@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.0.3 (2026-02-25)
+
+### Security
+- 新增输入安全校验，stock_code 仅允许字母和数字（`^[A-Za-z0-9]{1,10}$`），market 使用白名单（sh/sz/hk/us），防止 shell 命令注入
+- SKILL.md 增加输入安全校验说明
+- 解决 ClawHub VirusTotal 扫描报告中的 Suspicious 标记
+
 ## v1.0.2 (2026-02-24)
 
 ### Reverted

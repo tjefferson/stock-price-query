@@ -70,6 +70,19 @@ python3 scripts/stock_query.py 00700 hk      # Hong Kong stock
 }
 ```
 
+### Display Example (via OpenClaw + Feishu)
+
+When queried through OpenClaw in Feishu, the result is displayed in a compact format:
+
+```
+📈 贵州茅台（600519.sh）
+
+💰 当前价格：1466.80 元 | 📊 涨跌幅：-18.50 (-1.25%) ↓
+📅 行情时间：2026/02/24 16:14:16
+📊 今开 1521.00 | 最高 1524.40 | 最低 1463.60 | 昨收 1485.30
+📦 成交量：4,191,300 | 成交额：61.99亿
+```
+
 ## Project Structure
 
 ```

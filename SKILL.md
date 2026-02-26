@@ -91,26 +91,18 @@ python3 {{SKILL_DIR}}/scripts/stock_query.py <stock_code> [market]
 
 ### 输出格式要求
 
-查询成功后，以如下格式展示结果：
+查询成功后，以如下紧凑格式展示结果（不要使用表格，避免消息过长导致飞书分页）：
 
 ```
 📈 **{股票名称}**（{股票代码}.{市场}）
 
-💰 当前价格：{current_price} 元/港元/美元
-📊 涨跌幅：{change} ({change_percent}%) ↑/↓
+💰 当前价格：{current_price} 元/港元/美元 | 📊 涨跌幅：{change} ({change_percent}%) ↑/↓
 📅 行情时间：{time}
-
-| 指标 | 数值 |
-|------|------|
-| 今开 | {open} |
-| 最高 | {high} |
-| 最低 | {low} |
-| 昨收 | {prev_close} |
-| 成交量 | {volume} |
-| 成交额 | {amount} |
+📊 今开 {open} | 最高 {high} | 最低 {low} | 昨收 {prev_close}
+📦 成交量：{volume} | 成交额：{amount}
 ```
 
-涨跌幅为正时使用 ↑，为负时使用 ↓。
+涨跌幅为正时使用 ↑，为负时使用 ↓。成交额如果超过 1 亿，用"亿"为单位显示（保留两位小数）；超过 1 万不足 1 亿，用"万"为单位显示。
 
 ## Edge Cases
 

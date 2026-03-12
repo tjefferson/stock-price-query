@@ -1,17 +1,22 @@
 ---
 name: stock-price-query
-description: Query real-time stock prices for A-shares (Shanghai/Shenzhen), Hong Kong stocks, and US stocks. Use when the user asks about stock prices, market quotes, price changes, or mentions stock codes/names like 600519, AAPL, 00700, 贵州茅台, 腾讯, etc.
+description: "实时股票行情查询工具，支持 A 股（沪深两市）、港股、美股三大市场，返回当前价格、涨跌幅、开高低收、成交量等数据。支持股票代码（600519、00700、AAPL）和中文名称（贵州茅台、腾讯）查询，无需 API Key，零依赖。Real-time stock price and quote lookup for A-shares, Hong Kong stocks, and US equities. No API key required."
 metadata:
   {
     "openclaw":
       {
         "emoji": "📈",
         "requires": { "bins": ["python3"] },
+        "tags": ["stock", "stock-price", "quote", "A-shares", "Hong-Kong", "US-stocks", "finance", "market-data", "real-time", "equity", "ticker", "行情", "股票", "股价", "美股", "港股", "A股"],
       },
   }
 ---
 
 # Stock Price Query Skill
+
+实时股票行情查询技能，覆盖 **A 股（沪深两市）**、**港股**、**美股**三大市场。轻量无依赖，无需 API Key，适合聊天场景下的快速股价查询——秒级获取当前价格、涨跌幅、开高低收、成交量等行情数据。
+
+Real-time stock quote tool covering A-shares, Hong Kong, and US stocks. Quick chat-friendly price checks with zero dependencies and no API key needed.
 
 ## Overview
 
@@ -21,11 +26,11 @@ metadata:
 
 当用户的请求涉及以下场景时触发此技能：
 
-- 用户询问某只股票的当前价格，例如："贵州茅台现在多少钱？"、"查一下苹果的股价"
-- 用户想了解股票涨跌情况，例如："腾讯今天涨了还是跌了？"
-- 用户提供股票代码查询，例如："600519 现在什么价？"、"AAPL price"
-- 用户询问多只股票的价格对比，例如："帮我看看比亚迪和宁德时代的股价"
-- 用户说 "查股票"、"股票行情"、"stock price" 等关键词
+- 查询股价："茅台多少钱"、"查一下宁德时代"
+- 了解涨跌："腾讯今天涨了吗"、"00700 行情"
+- 股票代码查询："600519"、"NVDA price"
+- 多只对比："比亚迪和英伟达的股价"
+- 关键词触发："查股票"、"股票行情"、"stock price"
 
 ## How to Use
 

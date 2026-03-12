@@ -1,6 +1,6 @@
 ---
 name: stock-price-query
-description: "实时股票行情查询工具，支持 A 股（沪深两市）、港股、美股三大市场，返回当前价格、涨跌幅、开高低收、成交量等数据。支持股票代码（600519、00700、AAPL）和中文名称（贵州茅台、腾讯）查询，无需 API Key，零依赖。Real-time stock price and quote lookup for A-shares, Hong Kong stocks, and US equities. No API key required."
+description: "实时股票行情查询工具，支持 A 股（沪深两市）、港股、美股，无需 API Key。当用户查询股价、行情、涨跌，或提到股票代码/名称（如 600519、00700、NVDA、茅台、腾讯）时触发。Real-time stock price query for A-shares, HK & US stocks. Triggered when users ask about stock prices, quotes, or mention ticker symbols."
 metadata:
   {
     "openclaw":

@@ -1,6 +1,6 @@
 ---
 name: stock-price-query
-description: "实时股票行情查询工具，支持 A 股（沪深两市）、港股、美股，无需 API Key。支持单只查询和批量查询多只股票对比。查询股价、涨跌幅、成交量、大盘指数（上证、深证、恒指、纳指、道指、标普）。当用户查询股价、行情、涨跌，或提到股票代码/名称（如 600519、00700、NVDA、茅台、腾讯）时触发。Real-time stock price query for A-shares (Shanghai & Shenzhen), Hong Kong & US stocks. Batch query multiple stocks in one call. Check quotes, market indices, portfolio watchlist. Zero dependencies, no API key required. Finance, investing, trading, market data, ticker lookup."
+description: "实时股票行情查询，支持 A 股、港股、美股及大盘指数，支持批量查询。无需 API Key。Real-time stock & index quotes for A-shares, HK & US markets. Batch supported."
 metadata:
   {
     "openclaw":

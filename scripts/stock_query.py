@@ -3,19 +3,22 @@
 Stock Price Query Script
 查询 A 股（沪深）、港股、美股的实时行情数据。
 使用腾讯财经 API (qt.gtimg.cn) 获取数据，无需 API Key，无需特殊 Header。
+支持单只查询和批量查询（逗号分隔多只股票）。
 
 用法:
     python3 stock_query.py <stock_code> [market]
+    python3 stock_query.py <code1,code2,code3>
 
 参数:
-    stock_code: 股票代码，如 600519, AAPL, 00700
-    market:     可选，市场标识 (sh/sz/hk/us)，不提供则自动识别
+    stock_code: 股票代码，如 600519, AAPL, 00700；批量查询用逗号分隔
+    market:     可选，市场标识 (sh/sz/hk/us)，批量查询时不适用（自动识别）
 
 示例:
     python3 stock_query.py 600519
     python3 stock_query.py 600519 sh
     python3 stock_query.py AAPL us
     python3 stock_query.py 00700 hk
+    python3 stock_query.py 600519,00700,AAPL
 """
 
 import sys
@@ -25,10 +28,15 @@ import time
 import urllib.request
 import urllib.error
 
-# 输入校验正则：股票代码只允许字母和数字，最长 10 字符
-VALID_CODE_PATTERN = re.compile(r'^[A-Za-z0-9]{1,10}$')
+# 输入校验正则：股票代码允许字母、数字和前导点号（美股指数如 .IXIC），最长 10 字符
+VALID_CODE_PATTERN = re.compile(r'^\.?[A-Za-z0-9]{1,10}$')
 # 市场标识白名单
 VALID_MARKETS = {"sh", "sz", "hk", "us"}
+
+# 港股指数代码集合（纯字母但属于港股，需特殊处理避免误判为美股）
+HK_INDEX_CODES = {"HSI", "HSCEI", "HSTECH", "HSCCI", "HSCEI"}
+# 美股指数代码集合（以 . 开头）
+US_INDEX_CODES = {".IXIC", ".DJI", ".INX"}
 
 
 def validate_input(code: str, market: str | None) -> str | None:
@@ -56,6 +64,14 @@ def detect_market(code: str) -> str:
     if code.startswith("SZ"):
         return "sz"
     if code.startswith("HK"):
+        return "hk"
+
+    # 美股指数（以 . 开头，如 .IXIC .DJI .INX）
+    if code.startswith("."):
+        return "us"
+
+    # 港股指数（纯字母但属于港股，如 HSI HSCEI）
+    if code in HK_INDEX_CODES:
         return "hk"
 
     # 纯英文字母 -> 美股
@@ -94,6 +110,9 @@ def build_tencent_symbol(code: str, market: str) -> str:
     elif market == "sz":
         return f"sz{code}"
     elif market == "hk":
+        # 港股指数（纯字母如 HSI、HSCEI）不需要补零
+        if code.upper() in HK_INDEX_CODES:
+            return f"hk{code.upper()}"
         return f"hk{code.zfill(5)}"
     elif market == "us":
         return f"us{code.upper()}"
@@ -149,7 +168,11 @@ def parse_stock(raw: str, code: str, market: str) -> dict:
 
     display_code = clean_code(code)
     if market == "hk":
-        display_code = display_code.zfill(5)
+        # 港股指数不补零
+        if display_code.upper() not in HK_INDEX_CODES:
+            display_code = display_code.zfill(5)
+        else:
+            display_code = display_code.upper()
     elif market == "us":
         display_code = display_code.upper()
 
@@ -201,45 +224,149 @@ def fetch_stock(code: str, market: str, retry: bool = True) -> dict:
         return {"status": "error", "message": f"查询异常: {str(e)}"}
 
 
+def fetch_batch(codes: list[str]) -> list[dict]:
+    """批量获取多只股票的实时行情（单次 HTTP 请求）"""
+    # 为每只股票识别市场并构建符号
+    code_market_pairs = []
+    symbol_list = []
+    for code in codes:
+        market = detect_market(code)
+        code_market_pairs.append((code, market))
+        if market != "unknown":
+            symbol_list.append(build_tencent_symbol(code, market))
+        else:
+            symbol_list.append(None)
+
+    # 过滤有效符号，构建批量请求 URL
+    valid_symbols = [s for s in symbol_list if s is not None]
+    if not valid_symbols:
+        return [
+            {
+                "status": "error",
+                "code": c,
+                "message": "无法识别该股票代码，请确认后重试。"
+                           "支持 A 股（6 位数字）、港股（5 位数字）、美股（英文字母）。",
+            }
+            for c, _ in code_market_pairs
+        ]
+
+    url = f"https://qt.gtimg.cn/q={','.join(valid_symbols)}"
+
+    try:
+        req = urllib.request.Request(url)
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            raw = resp.read().decode("gbk", errors="ignore")
+    except urllib.error.HTTPError as e:
+        return [{"status": "error", "message": f"HTTP 请求失败: {e.code} {e.reason}"}]
+    except urllib.error.URLError as e:
+        return [{"status": "error", "message": f"网络请求失败: {str(e.reason)}"}]
+    except Exception as e:
+        return [{"status": "error", "message": f"查询异常: {str(e)}"}]
+
+    # 解析响应：按 v_<symbol>="data" 格式提取每只股票的数据
+    # 响应格式: v_sh600519="1~贵州茅台~..."; v_usAAPL="200~苹果~...";
+    response_map = {}
+    for match in re.finditer(r'v_([a-zA-Z0-9.]+)="([^"]*)"', raw):
+        resp_symbol = match.group(1)
+        resp_data = match.group(2)
+        response_map[resp_symbol.lower()] = resp_data
+
+    # 按原始输入顺序，用 symbol 从 response_map 中取对应数据
+    results = []
+    for i, (code, market) in enumerate(code_market_pairs):
+        if market == "unknown":
+            results.append({
+                "status": "error",
+                "code": clean_code(code),
+                "message": f"无法识别股票代码 {code}，请确认后重试。",
+            })
+            continue
+
+        symbol = symbol_list[i]
+        resp_data = response_map.get(symbol.lower()) if symbol else None
+
+        if resp_data is None or not resp_data.strip():
+            results.append({
+                "status": "error",
+                "code": clean_code(code),
+                "message": f"未找到股票 {clean_code(code)}，请检查代码是否正确",
+            })
+        else:
+            results.append(parse_stock(resp_data, code, market))
+
+    return results
+
+
 def main():
     if len(sys.argv) < 2:
         print(json.dumps(
-            {"status": "error", "message": "用法: python3 stock_query.py <stock_code> [market]"},
+            {"status": "error", "message": "用法: python3 stock_query.py <stock_code> [market]\n"
+                                           "批量: python3 stock_query.py <code1,code2,code3>"},
             ensure_ascii=False,
         ))
         sys.exit(1)
 
-    code = sys.argv[1].strip()
-    market = sys.argv[2].strip().lower() if len(sys.argv) > 2 else None
+    raw_input = sys.argv[1].strip()
 
-    # 输入安全校验：仅允许字母、数字和白名单市场标识
-    validation_error = validate_input(code, market)
-    if validation_error:
-        print(json.dumps(
-            {"status": "error", "message": validation_error},
-            ensure_ascii=False,
-        ))
-        sys.exit(1)
+    # 判断是否为批量查询（包含逗号）
+    if "," in raw_input:
+        codes = [c.strip() for c in raw_input.split(",") if c.strip()]
+        if len(codes) > 20:
+            print(json.dumps(
+                {"status": "error", "message": "批量查询最多支持 20 只股票"},
+                ensure_ascii=False,
+            ))
+            sys.exit(1)
 
-    if not market:
-        market = detect_market(code)
+        # 逐个校验每个代码
+        for c in codes:
+            validation_error = validate_input(c, None)
+            if validation_error:
+                print(json.dumps(
+                    {"status": "error", "message": f"股票代码 '{c}' 校验失败: {validation_error}"},
+                    ensure_ascii=False,
+                ))
+                sys.exit(1)
 
-    if market == "unknown":
-        print(json.dumps(
-            {
-                "status": "error",
-                "message": "无法识别该股票代码，请确认后重试。"
-                           "支持 A 股（6 位数字）、港股（5 位数字）、美股（英文字母）。",
-            },
-            ensure_ascii=False,
-        ))
-        sys.exit(1)
+        results = fetch_batch(codes)
+        print(json.dumps(results, ensure_ascii=False, indent=2))
 
-    result = fetch_stock(code, market)
-    print(json.dumps(result, ensure_ascii=False, indent=2))
+        # 如果全部失败则退出码 1
+        if all(r.get("status") != "success" for r in results):
+            sys.exit(1)
+    else:
+        # 单只查询（保持原有逻辑）
+        code = raw_input
+        market = sys.argv[2].strip().lower() if len(sys.argv) > 2 else None
 
-    if result.get("status") != "success":
-        sys.exit(1)
+        # 输入安全校验：仅允许字母、数字和白名单市场标识
+        validation_error = validate_input(code, market)
+        if validation_error:
+            print(json.dumps(
+                {"status": "error", "message": validation_error},
+                ensure_ascii=False,
+            ))
+            sys.exit(1)
+
+        if not market:
+            market = detect_market(code)
+
+        if market == "unknown":
+            print(json.dumps(
+                {
+                    "status": "error",
+                    "message": "无法识别该股票代码，请确认后重试。"
+                               "支持 A 股（6 位数字）、港股（5 位数字）、美股（英文字母）。",
+                },
+                ensure_ascii=False,
+            ))
+            sys.exit(1)
+
+        result = fetch_stock(code, market)
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+
+        if result.get("status") != "success":
+            sys.exit(1)
 
 
 if __name__ == "__main__":

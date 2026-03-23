@@ -15,8 +15,21 @@ An [OpenClaw](https://github.com/openclaw/openclaw) skill for querying real-time
 |--------|------------|---------|
 | Shanghai (SH) | 6-digit starting with 6 | `600519` (Kweichow Moutai) |
 | Shenzhen (SZ) | 6-digit starting with 0/3 | `300750` (CATL) |
-| Hong Kong (HK) | Up to 5 digits | `00700` (Tencent) |
-| US | Alphabetic ticker | `AAPL` (Apple) |
+| Hong Kong (HK) | Up to 5 digits, or index code | `00700` (Tencent), `HSI` (Hang Seng Index) |
+| US | Alphabetic ticker, or `.`-prefixed index | `AAPL` (Apple), `.IXIC` (NASDAQ) |
+
+### Market Indices
+
+| Index | Code | Market |
+|-------|------|--------|
+| SSE Composite (上证指数) | `000001` | sh |
+| SZSE Component (深证成指) | `399001` | sz |
+| ChiNext (创业板指) | `399006` | sz |
+| Hang Seng Index (恒生指数) | `HSI` | hk |
+| HSCEI (国企指数) | `HSCEI` | hk |
+| NASDAQ Composite (纳斯达克) | `.IXIC` | us |
+| Dow Jones (道琼斯) | `.DJI` | us |
+| S&P 500 (标普500) | `.INX` | us |
 
 ## Usage
 
@@ -43,10 +56,19 @@ Then ask naturally in OpenClaw:
 ```bash
 python3 scripts/stock_query.py <stock_code> [market]
 
-# Examples
+# Examples — Individual stocks
 python3 scripts/stock_query.py 600519        # A-share (auto-detect)
 python3 scripts/stock_query.py AAPL          # US stock
 python3 scripts/stock_query.py 00700 hk      # Hong Kong stock
+
+# Examples — Market indices
+python3 scripts/stock_query.py 000001 sh     # SSE Composite (上证指数)
+python3 scripts/stock_query.py HSI           # Hang Seng Index (恒生指数)
+python3 scripts/stock_query.py .IXIC         # NASDAQ Composite (纳斯达克)
+python3 scripts/stock_query.py .DJI          # Dow Jones (道琼斯)
+
+# Examples — Batch query (mixed stocks & indices)
+python3 scripts/stock_query.py .IXIC,HSI,600519,AAPL
 ```
 
 ### Output Example

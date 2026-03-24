@@ -7,7 +7,7 @@ metadata:
       {
         "emoji": "📈",
         "requires": { "bins": ["python3"] },
-        "tags": ["stock", "stock-price", "quote", "A-shares", "Hong-Kong", "US-stocks", "finance", "market-data", "real-time", "equity", "ticker", "行情", "股票", "股价", "美股", "港股", "A股", "batch-query", "index", "大盘", "指数", "涨跌", "trading", "investing", "portfolio", "watchlist", "market-index", "shanghai", "shenzhen", "nasdaq", "hang-seng", "批量查询", "K线", "成交量"],
+        "tags": ["stock", "stock-price", "A-shares", "Hong-Kong", "US-stocks", "finance", "market-index", "股票", "港股", "美股"],
       },
   }
 ---

@@ -6,8 +6,10 @@ An [OpenClaw](https://github.com/openclaw/openclaw) skill for querying real-time
 
 - **Multi-market support**: A-shares (Shanghai & Shenzhen), Hong Kong stocks, and US stocks
 - **Auto market detection**: Automatically identifies the market based on stock code format
+- **Batch query**: Query up to 20 stocks in a single call with comma-separated codes
+- **Extended data**: PE ratio and market cap included when available from data source
 - **Zero dependencies**: Pure Python 3 standard library, no external packages required
-- **Structured output**: Returns JSON with price, change, volume, and more
+- **Structured output**: Returns JSON with price, change, volume, PE ratio, market cap and more
 
 ## Supported Markets
 

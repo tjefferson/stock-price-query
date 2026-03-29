@@ -28,6 +28,8 @@ import time
 import urllib.request
 import urllib.error
 
+VERSION = "1.1.4"
+
 # 输入校验正则：股票代码允许字母、数字和前导点号（美股指数如 .IXIC），最长 10 字符
 VALID_CODE_PATTERN = re.compile(r'^\.?[A-Za-z0-9]{1,10}$')
 # 市场标识白名单
@@ -176,7 +178,21 @@ def parse_stock(raw: str, code: str, market: str) -> dict:
     elif market == "us":
         display_code = display_code.upper()
 
-    return {
+    # 扩展字段：市盈率 [39]、总市值 [45]（部分市场可用）
+    pe_ratio = None
+    market_cap = None
+    if len(parts) > 39 and parts[39].strip():
+        try:
+            pe_ratio = round(float(parts[39]), 2)
+        except (ValueError, IndexError):
+            pass
+    if len(parts) > 45 and parts[45].strip():
+        try:
+            market_cap = round(float(parts[45]), 2)
+        except (ValueError, IndexError):
+            pass
+
+    result = {
         "code": display_code,
         "name": name,
         "market": market,
@@ -192,6 +208,11 @@ def parse_stock(raw: str, code: str, market: str) -> dict:
         "time": time_str,
         "status": "success",
     }
+    if pe_ratio is not None:
+        result["pe_ratio"] = pe_ratio
+    if market_cap is not None:
+        result["market_cap"] = market_cap
+    return result
 
 
 def fetch_stock(code: str, market: str, retry: bool = True) -> dict:
@@ -298,6 +319,10 @@ def fetch_batch(codes: list[str]) -> list[dict]:
 
 
 def main():
+    if len(sys.argv) >= 2 and sys.argv[1] in ("--version", "-V"):
+        print(f"stock_query.py {VERSION}")
+        sys.exit(0)
+
     if len(sys.argv) < 2:
         print(json.dumps(
             {"status": "error", "message": "用法: python3 stock_query.py <stock_code> [market]\n"

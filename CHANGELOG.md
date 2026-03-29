@@ -1,5 +1,25 @@
 # Changelog
 
+## v1.1.4 (2026-03-29)
+
+### Added
+- **市盈率与市值数据**：查询结果新增 `pe_ratio`（市盈率）和 `market_cap`（总市值）字段，在数据源可用时自动返回
+- **版本号查询**：支持 `--version` / `-V` 参数查看脚本版本
+
+### Changed
+- SKILL.md 输出格式说明新增市盈率和市值展示
+- 恢复 CHANGELOG.md 和 README.md 文档
+
+## v1.1.3 (2026-03-23)
+
+### Changed
+- Removed documentation files: CHANGELOG.md and README.md
+
+## v1.1.2 (2026-03-23)
+
+### Changed
+- Minor metadata updates
+
 ## v1.1.1 (2026-03-23)
 
 ### Fixed

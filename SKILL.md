@@ -63,7 +63,7 @@ python3 {{SKILL_DIR}}/scripts/stock_query.py <code1,code2,code3>
 - `stock_code`（必需）：股票代码，如 `600519`、`AAPL`、`00700`。批量查询时用逗号分隔，最多 20 只。
 - `market`（可选）：市场标识，可选值为 `sh`（沪市）、`sz`（深市）、`hk`（港股）、`us`（美股）。不提供时脚本会自动识别。批量查询时不需要此参数（自动识别各只股票的市场）。
 
-**单只查询输出格式**：JSON 对象：
+**单只查询输出格式**：JSON 对象（`pe_ratio` 和 `market_cap` 在数据源可用时返回）：
 ```json
 {
   "code": "600519",
@@ -79,6 +79,8 @@ python3 {{SKILL_DIR}}/scripts/stock_query.py <code1,code2,code3>
   "volume": 2345678,
   "amount": 3956789012.50,
   "time": "2026-02-24 15:00:00",
+  "pe_ratio": 28.35,
+  "market_cap": 2120000000000.00,
   "status": "success"
 }
 ```
@@ -148,6 +150,7 @@ python3 {{SKILL_DIR}}/scripts/stock_query.py <code1,code2,code3>
 📅 行情时间：{time}
 📊 今开 {open} | 最高 {high} | 最低 {low} | 昨收 {prev_close}
 📦 成交量：{volume} | 成交额：{amount}
+📐 市盈率：{pe_ratio} | 总市值：{market_cap}（如有）
 ```
 
 **批量查询**：多只股票依次展示，每只之间空一行：

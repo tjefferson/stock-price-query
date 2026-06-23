@@ -127,3 +127,7 @@ Uses Tencent Finance API (`qt.gtimg.cn`) — free, no API key required, no speci
 ## License
 
 MIT
+
+## Download History
+
+[![Download History](https://skill-history.com/chart/tjefferson/stock-price-query.svg)](https://skill-history.com/tjefferson/stock-price-query)
